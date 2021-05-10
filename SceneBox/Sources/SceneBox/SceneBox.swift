@@ -1,13 +1,16 @@
 //
 //  SceneBox.swift
+//  SceneBox
 //
-//
-//  Created by LumiaSaki on 2021/3/21.
+//  Created by Lumia_Saki on 2021/3/21.
+//  Copyright © 2021年 tianren.zhu. All rights reserved.
 //
 
 import Foundation
 import UIKit
 
+/// It's a mechanism what really helpful and suitable for those processes which can not be interrupted, fully decoupled, might be reordered in the future, contains a lot of states need to be shared.
+/// You can create `SceneBox`s to launch a series of your processes.
 public final class SceneBox {
     
     public typealias EntryBlock = (_ scene: Scene, _ sceneBox: SceneBox) -> Void
@@ -15,15 +18,28 @@ public final class SceneBox {
     
     public typealias SceneConstructionBlock = () -> Scene
     
+    /// Configuration of current `SceneBox`, contains any necessary information needed by `SceneBox` executing.
     public let configuration: Configuration
-    public let identifier: UUID = UUID()
     
+    /// The unique identifier of `SceneBox`.
+    public let identifier: UUID = UUID()
+        
+    /// Navigation controller drive the transition between `Scene`s.
     public private(set) var navigationController: UINavigationController?
+    
+    /// Return the current active `Scene` instance, nil before executing.
     public private(set) var activeScene: Scene?
+    
+    /// The Map of state of scenes and their corresponding identifiers, assigned from `Configuration`.
     public private(set) var stateSceneIdentifierTable: [Int : UUID] = Dictionary()
+    
+    /// Enabled extensions, set from `Configuration`.
     public private(set) var extensions: [String : Extension] = Dictionary()
     
+    /// Entry block, you can customize any further within the entry block to implement your own logics.
     public private(set) var entryBlock: EntryBlock
+    
+    /// Exit block, you can make any clean up stuffs in the block.
     public private(set) var exitBlock: ExitBlock
     
     // MARK: - Private Properties
@@ -39,18 +55,30 @@ public final class SceneBox {
         self.exitBlock = exit
     }
     
+    /// Lazily add a scene with a construction block and the identifier.
+    /// - Parameters:
+    ///   - identifier: Unique identifier of the scene. Notice: the identifier plays different roles than the state of scene. The state should be relative with your business logic.
+    ///   - sceneBuilder: You should return an instance of `Scene` in the closure.
     public func lazyAdd(identifier: UUID, sceneBuilder: @escaping SceneConstructionBlock) {
         precondition(Thread.isMainThread)
         
         lazySceneConstructors[identifier] = sceneBuilder
     }
     
+    /// Lazily add a scene with a construction block and the identifier, the only difference with above is `@autoclosure` this version.
+    /// - Parameters:
+    ///   - identifier: Unique identifier of the scene.
+    ///   - sceneBuilder: `Autoclosure` version of construction block.
     public func lazyAdd(identifier: UUID, sceneBuilder: @autoclosure @escaping SceneConstructionBlock) {
         precondition(Thread.isMainThread)
         
         lazySceneConstructors[identifier] = sceneBuilder
     }
     
+    /// Launch the process of `SceneBox`, the `EntryBlock` will be invoked, give you a chance to customize anything, setup the context for entry scene, inject any reserved shared state into the shared store, etc. Once you `execute` the `SceneBox`, the process acts as a box from outside aspect, all navigations and state sharing within the box.
+    /// You can call this function manually, but if you do that you need to manage the life-cycle of `SceneBox` manually as well, we recommend you to use `Executor` to `execute` a instance of `SceneBox`.
+    /// - Throws: `SBXError.Scene.cantFindEntryScene` if box can not find the entry scene from your `scenesIdentifierMap`.
+    /// - Throws: `SBXError.Scene.navigationControllerNil` if navigation controller is nil when executing.
     public func execute() throws {
         processConfiguration()
         
@@ -62,9 +90,9 @@ public final class SceneBox {
             throw SBXError.Scene.navigationControllerNil
         }
         
-        markSceneAsActive(scene: entryTuple.0)
+        markSceneAsActive(scene: entryTuple.identifier)
         
-        entryBlock(entryTuple.1, self)
+        entryBlock(entryTuple.scene, self)
     }
     
     // MARK: - Private Methods
@@ -84,7 +112,7 @@ public final class SceneBox {
         }
     }
     
-    private func findEntryScene(from table: [Int : UUID]) -> (UUID, Scene)? {
+    private func findEntryScene(from table: [Int : UUID]) -> (identifier: UUID, scene: Scene)? {
         guard let candidate = table.first(where: {
             return $0.key == NavigationExtension.entry
         }) else {
@@ -130,12 +158,16 @@ public final class SceneBox {
     }
 }
 
-extension SceneBox: SceneBoxPublicAbility {
+extension SceneBox: SceneBoxCapabilityOutlet {
     
+    /// For retrieving current `stateIdentifierStateMap`.
+    /// - Returns: Current `stateIdentifierStateMap`.
     public func stateIdentifierStateMap() -> [Int : UUID] {
         return stateSceneIdentifierTable
     }
     
+    /// Navigate from one scene to another, by using the identifier of scene. `Extension`s are inaccessible to the real `Scene` instance, what all they can do is building a shadow DOM tree based on identifiers of `Scene`s.
+    /// - Parameter scene: The identifier of an instance of `Scene`.
     public func navigate(to scene: UUID) {
         precondition(Thread.isMainThread)
         
@@ -183,6 +215,8 @@ extension SceneBox: SceneBoxPublicAbility {
         navigationController?.pushViewController(targetScene, animated: true)
     }
     
+    /// Maintaining and keeping sync of state of the active scene is the job of `NavigationExtension` ( no matter the built-in one or your custom extensions ).
+    /// - Parameter scene: The identifier of an instance of `Scene`.
     public func markSceneAsActive(scene: UUID) {
         precondition(Thread.isMainThread)
         
@@ -194,6 +228,7 @@ extension SceneBox: SceneBoxPublicAbility {
         activeScene = targetScene
     }
     
+    /// Ask `SceneBox` to be terminated, `SceneBox` will take over any internal cleanup works, call relative life-cycle functions, remove any unnecessary stuffs from memory, call `exitBlock` at last.
     public func terminateBox() {
         precondition(Thread.isMainThread)
         
@@ -215,12 +250,22 @@ extension SceneBox: SceneBoxPublicAbility {
 
 extension SceneBox: InternalMessageSupport {
     
+    /// `Extension` can extend capability of `SceneBox`, in some scenarios, extensions need exchange information between themselves.
+    /// Dispatching a message with an event name.
+    /// - Parameters:
+    ///   - event: The name of the event.
+    ///   - message: The message instance.
     public func dispatch<T>(event: EventBus.EventName, message: T?) {
-        eventBus.dispatch(event: event, userInfo: message)
+        eventBus.dispatch(event: event, message: message)
     }
     
+    /// Watching on a message with its name.
+    /// - Parameters:
+    ///   - event: The name of the event.
+    ///   - messageType: The type of the message, it will be a hint for the compiler to know what the actual type is in `next` closure.
+    ///   - next: The closure which will be invoked when the message been dispatched.
     public func watch<T>(on event: EventBus.EventName, messageType: T.Type, next: ((T?) -> Void)?) {
-        eventBus.watch(on: event, type: messageType, next: next)
+        eventBus.watch(on: event, messageType: messageType, next: next)
     }
     
 }

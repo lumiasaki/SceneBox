@@ -1,3 +1,11 @@
+//
+//  SceneBoxTests.swift
+//  SceneBox
+//
+//  Created by Lumia_Saki on 2021/5/6.
+//  Copyright © 2021年 tianren.zhu. All rights reserved.
+//
+
 import XCTest
 @testable import SceneBox
 
@@ -236,5 +244,8 @@ final class SceneBoxTests: XCTestCase {
 
     static var allTests = [
         ("testBasicLifeCyclesOfSceneBox", testBasicLifeCyclesOfSceneBox),
+        ("testBasicLifeCycleOfScene", testBasicLifeCycleOfScene),
+        ("testNavigationExtension", testNavigationExtension),
+        ("testSharedStateExtension", testSharedStateExtension)
     ]
 }

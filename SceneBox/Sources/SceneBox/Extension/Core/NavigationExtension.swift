@@ -1,45 +1,70 @@
 //
-//  SceneBoxNavigationExtension.swift
-//  
+//  NavigationExtension.swift
+//  SceneBox
 //
-//  Created by LumiaSaki on 2021/3/29.
+//  Created by Lumia_Saki on 2021/3/29.
+//  Copyright © 2021年 tianren.zhu. All rights reserved.
 //
 
 import Foundation
 import UIKit
 
-public struct NavigationMessage {
+/// Message data structure for built-in navigation extension, be used for exchanging navigation trace information between extensions.
+public struct NavigationTraceMessage {
     
+    /// The source scene state.
     public var from: Int?
-    public var to: Int?
-    public var scenes: [Int]?
     
-    public init(from: Int?, to: Int?, scenes: [Int]? = nil) {
+    /// The destination scene state.
+    public var to: Int?
+    
+    /// Initializer for NavigationTraceMessage.
+    /// - Parameters:
+    ///   - from: The source scene state.
+    ///   - to: The destination scene state.
+    public init(from: Int?, to: Int?) {
         self.from = from
         self.to = to
+    }
+}
+
+/// Message data structure for built-in navigation extension, be used for exchanging all scene states among the extensions.
+public struct NavigationGetScenesMessage {
+    
+    /// The exist scene states, in appear order.
+    public var scenes: [Int]?
+    
+    /// Initializer for NavigationGetScenesMessage.
+    /// - Parameter scenes: Scene states.
+    public init(scenes: [Int]?) {
         self.scenes = scenes
     }
 }
 
 public extension EventBus.EventName {
     
+    /// Event name for taking a look to navigation trace.
     static let navigationTrack: EventBus.EventName = .init(rawValue: "EventTrack")
+    
+    /// The name for requesting the scene states.
     static let getStatesRequest: EventBus.EventName = .init(rawValue: "GetScenesRequest")
+    
+    /// The name for responding the scene states when receiving the `getStatesRequest` event.
     static let getStatesResponse: EventBus.EventName = .init(rawValue: "GetScenesResponse")
 }
 
-/// Built-in navigation extension for SceneBox, manages the transition state trance inside, manipulate transition between scenes
+/// Built-in navigation extension for SceneBox, manages the transition state trance inside, manipulate transition between scenes. Assuming all scene state in `Int` format.
 public final class NavigationExtension: NSObject, Extension {
     
-    /// Entry state of navigation, when you execute a scenebox, it will try to find the entry one.
+    /// Entry state of navigation, when you execute a SceneBox, it will try to find the entry one.
     public static let entry: Int = .min
     
-    /// Termination state of navigation, transit to this state when you try to terminate the scenebox.
+    /// Termination state of navigation, transit to this state when you try to terminate the SceneBox.
     public static let termination: Int = .max
     
     // MARK: - Extension
     
-    /// Associated scenebox, should always be weak.
+    /// Associated SceneBox, should always be weak.
     public weak var sceneBox: SceneBox?
     
     private var stateTrace: [Int] = Array()
@@ -54,17 +79,17 @@ public final class NavigationExtension: NSObject, Extension {
         sceneBox?.navigationController?.delegate = self
         
         sceneBox?.watch(on: EventBus.EventName.getStatesRequest, messageType: Void.self, next: { [unowned self] _ in
-            self.sceneBox?.dispatch(event: EventBus.EventName.getStatesResponse, message: NavigationMessage(from: nil, to: nil, scenes: stateTrace))
+            self.sceneBox?.dispatch(event: EventBus.EventName.getStatesResponse, message: NavigationGetScenesMessage(scenes: stateTrace))
         })
     }
     
-    // MARK: - private
+    // MARK: - Private
     
     fileprivate func transit(to state: Int) {
         precondition(Thread.isMainThread)
         
         if stateTrace.count > 0 {
-            sceneBox?.dispatch(event: EventBus.EventName.navigationTrack, message: NavigationMessage(from: currentState, to: state))
+            sceneBox?.dispatch(event: EventBus.EventName.navigationTrack, message: NavigationTraceMessage(from: currentState, to: state))
             logger(content: "scene navigate from \(String(describing: currentState)) to \(state)")
         }
         
@@ -95,8 +120,10 @@ public final class NavigationExtension: NSObject, Extension {
     }
 }
 
-extension SceneBoxSceneAbilityWrapper {
+extension SceneCapabilityWrapper {
     
+    /// Transit to another state of scene, the state is set in the configuration of SceneBox.
+    /// - Parameter state: The state navigated to.
     public func transit(to state: Int) {
         guard let ext = try? _getExtension(by: NavigationExtension.self) else {
             return
@@ -105,6 +132,8 @@ extension SceneBoxSceneAbilityWrapper {
         ext.transit(to: state)
     }
     
+    /// Return true if the current scene is the active one. `Active` means the caller scene is on the scene as the latest scene in the stack.
+    /// - Returns: The result of testing.
     public func currentIsActiveScene() -> Bool {
         guard let ext = try? _getExtension(by: NavigationExtension.self) else {
             return false
