@@ -7,6 +7,12 @@ There is a very common scenario when we build an app, that is, using a series of
 
 Based on these two pain points, I conceived the framework to enable us to develop application-specific business scenarios that can be more scalable and efficient.
 
+## How to integrate into your project
+
+To integrate using Apple's SPM, add following as a dependency to your Target.
+
+`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.1.0"))`
+
 ## Basic Concept
 
 ### SceneBox
