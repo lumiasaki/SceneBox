@@ -28,7 +28,7 @@ public final class SceneBox {
     public private(set) var navigationController: UINavigationController?
     
     /// Return the current active `Scene` instance, nil before executing.
-    public private(set) var activeScene: Scene?
+    public private(set) weak var activeScene: Scene?
     
     /// The Map of state of scenes and their corresponding identifiers, assigned from `Configuration`.
     public private(set) var stateSceneIdentifierTable: [Int : UUID] = Dictionary()
@@ -194,20 +194,22 @@ extension SceneBox: SceneBoxCapabilityOutlet {
                 navigationController?.popToViewController(targetScene, animated: true)
             }
             
-            let candidates = scenesIdentifierMap.values.filter {
-                if viewControllers.contains($0) {
+            if let viewControllers = navigationController?.viewControllers {
+                let candidates = scenesIdentifierMap.values.filter {
+                    if viewControllers.contains($0) {
+                        return false
+                    }
+                    
+                    if let parent = $0.parent, viewControllers.contains(parent) {
+                        return false
+                    }
+                    
                     return true
                 }
+                .map { $0.sceneIdentifier }
                 
-                if let parent = $0.parent, viewControllers.contains(parent) {
-                    return true
-                }
-                
-                return false
+                candidates.forEach { scenesIdentifierMap.removeValue(forKey: $0!) }
             }
-            .map { $0.sceneIdentifier }
-            
-            candidates.forEach { scenesIdentifierMap.removeValue(forKey: $0!) }
             
             return
         }
