@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SceneBox",
+        "repositoryURL": "https://github.com/lumiasaki/SceneBox.git",
+        "state": {
+          "branch": null,
+          "revision": "8d9a20d92fdaf4278a4d730a287eda48fbc60af7",
+          "version": "0.2.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
