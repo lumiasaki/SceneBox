@@ -175,6 +175,10 @@ extension SceneBox: SceneBoxCapabilityOutlet {
             return
         }
         
+        guard activeScene?.sceneIdentifier != scene else {
+            return
+        }
+        
         func tryToFindChildViewControllerIfExists(scene: Scene) -> Bool {
             for viewController in viewControllers {
                 if viewController.children.contains(scene) {
