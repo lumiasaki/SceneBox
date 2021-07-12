@@ -23,9 +23,9 @@ struct SceneState: RawRepresentable, Hashable, Equatable {
 
     var rawValue: Int
 
-    static let home = ExampleSceneState(rawValue: NavigationExtension.entry)
-    static let detail = ExampleSceneState(rawValue: 1)
-    static let termination = ExampleSceneState(rawValue: NavigationExtension.termination)
+    static let home = SceneState(rawValue: NavigationExtension.entry)
+    static let detail = SceneState(rawValue: 1)
+    static let termination = SceneState(rawValue: NavigationExtension.termination)
 }
 
 extension SceneState: CaseIterable {
