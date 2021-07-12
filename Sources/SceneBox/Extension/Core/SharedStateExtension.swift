@@ -9,20 +9,20 @@
 import Foundation
 
 @propertyWrapper
-class SceneBoxSharedStateInjected<T> {
+public class SceneBoxSharedStateInjected<T> {
     
-    let key: AnyHashable
+    private let key: AnyHashable
     private var scene: Scene?
     
-    init(key: AnyHashable) {
+    public init(key: AnyHashable) {
         self.key = key
     }
     
-    func configure(scene: Scene?) {
+    public func configure(scene: Scene?) {
         self.scene = scene
     }
     
-    var wrappedValue: T? {
+    public var wrappedValue: T? {
         get {
             guard let scene = scene else {
                 fatalError("configure scene firstly")
