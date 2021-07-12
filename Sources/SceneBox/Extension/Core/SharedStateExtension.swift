@@ -27,9 +27,8 @@ class SceneBoxSharedStateInjected<T> {
             guard let scene = scene else {
                 fatalError("configure scene firstly")
             }
-            
-            let value: T? = scene.sbx.getSharedState(by: key)
-            return value
+                        
+            return scene.sbx.getSharedState(by: key) as? T
         }
         
         set {
