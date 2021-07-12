@@ -11,7 +11,141 @@ Based on these two pain points, I conceived the framework to enable us to develo
 
 To integrate using Apple's SPM, add following as a dependency to your Target.
 
-`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.1.0"))`
+`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.2.4"))`
+
+## How to use
+
+### Distribute scene states from product level
+
+```swift
+
+struct SceneState: RawRepresentable, Hashable, Equatable {
+
+    var rawValue: Int
+
+    static let home = ExampleSceneState(rawValue: NavigationExtension.entry)
+    static let detail = ExampleSceneState(rawValue: 1)
+    static let termination = ExampleSceneState(rawValue: NavigationExtension.termination)
+}
+
+extension SceneState: CaseIterable {
+
+    /// Help to register all states.
+    static var allCases: [SceneState] { [.home, .detail, .termination] }
+}
+
+```
+
+### Generate configuration
+
+```swift
+
+let identifier = UUID()
+let sceneState = SceneState.home.rawValue
+
+let sceneBoxConfiguration = Configuration(stateSceneIdentifierTable: [sceneState : identifier])
+
+```
+
+I strongly recommend you to use helper `SceneStateConfiguration` in `Example Project` to simplify `Configuration` initialization.
+
+### Initiate SceneBox
+
+```swift
+
+let sceneBox = SceneBox(configuration: sceneBoxConfiguration) { scene, sceneBox in
+            self.navigationController.pushViewController(scene, animated: false)
+        } exit: { _ in }
+        
+```
+
+### Setup scene state identifier table
+
+```swift
+
+box.lazyAdd(identifier: sceneStateConfiguration.identifier(with: .home)) {
+                let viewModel = HomeViewModel()
+                let viewController = HomeViewController(viewModel: viewModel)
+                viewModel.scene = viewController
+
+                return viewController
+            }
+
+```
+
+### Launch the box
+
+```swift
+
+try? Executor.shared.execute(box: sceneBox)
+
+```
+
+### Make a view controller as Scene
+
+```swift
+
+import Foundation
+import UIKit
+import SceneBox
+
+class MyViewController: UIViewController, Scene {
+
+    var sceneIdentifier: UUID!
+  
+    // ...
+}
+
+```
+
+### How to access capabilities from SceneBox in Scene
+
+```swift
+
+class MyViewController: UIViewController, Scene {
+
+    var sceneIdentifier: UUID!
+  
+    func saveValue() {
+        sbx.putSharedState(by: "Color", sharedState: UIColor.red)
+    }
+    
+    func fetchValue() {
+        let color: UIColor? = sbx.getSharedState(by: "Color")
+    }
+    
+    func pushToNext() {
+        sbx.transit(to: SceneState.detail.rawValue)
+    }
+}
+
+```
+
+You can create any feature to enhance your box by implementing extensions.
+
+### Shared state injection wrapper
+
+```swift
+
+class MyViewController: UIViewController, Scene {
+
+    var sceneIdentifier: UUID!
+  
+    @SceneBoxSharedStateInjected(key: "Color")
+    private var color: UIColor?
+    
+    init() {
+        _color.configure(scene: self)
+        
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    func getCurrentColor() -> UIColor? {
+        return color
+    }
+}
+
+```
 
 ## Basic Concept
 
