@@ -23,14 +23,14 @@ public final class Configuration {
         
     /// Initializer for Configuration
     /// - Parameter stateSceneIdentifierTable: Table for state of scenes and the corresponding identifiers.
-    init(stateSceneIdentifierTable: [Int : UUID]) {
+    public init(stateSceneIdentifierTable: [Int : UUID]) {
         self.stateSceneIdentifierTable = stateSceneIdentifierTable
     }
     
     /// Enable an extension to the configuration.
     /// - Parameter ext: Custom extension which conforms to the `Extension` protocol.
     /// - Throws: `SBXError.Extension.extensionAlreadyExists` if you set an extension twice.
-    func setExtension(_ ext: Extension) throws {
+    public func setExtension(_ ext: Extension) throws {
         let typeName = String(describing: type(of: ext))
         
         guard extensions[typeName] == nil else {
