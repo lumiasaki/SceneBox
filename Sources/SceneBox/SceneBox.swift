@@ -49,7 +49,7 @@ public final class SceneBox {
     
     private lazy var eventBus: EventBus = EventBus()
     
-    init(configuration: Configuration, entry: @escaping EntryBlock, exit: @escaping ExitBlock) {
+    public init(configuration: Configuration, entry: @escaping EntryBlock, exit: @escaping ExitBlock) {
         self.configuration = configuration
         self.entryBlock = entry
         self.exitBlock = exit
