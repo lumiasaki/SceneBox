@@ -8,6 +8,40 @@
 
 import Foundation
 
+@propertyWrapper
+class SceneBoxSharedStateInjected<T> {
+    
+    let key: AnyHashable
+    private var scene: Scene?
+    
+    init(key: AnyHashable) {
+        self.key = key
+    }
+    
+    func configure(scene: Scene?) {
+        self.scene = scene
+    }
+    
+    var wrappedValue: T? {
+        get {
+            guard let scene = scene else {
+                fatalError("configure scene firstly")
+            }
+            
+            let value: T? = scene.sbx.getSharedState(by: key)
+            return value
+        }
+        
+        set {
+            guard let scene = scene else {
+                fatalError("configure scene firstly")
+            }
+            
+            scene.sbx.putSharedState(by: key, sharedState: newValue)
+        }
+    }
+}
+
 /// Message data structure for shared state extension to exchange information with other extensions in the SceneBox.
 public struct SharedStateMessage {
     
