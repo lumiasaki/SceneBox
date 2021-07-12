@@ -13,5 +13,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Run unit tests
-      run: xcodebuild test -scheme SceneBox -workspace SceneBox.xcworkspace -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.2' | xcpretty && exit ${PIPESTATUS[0]}
+    - name: Generate
+      run: swift package generate-xcodeproj
+    - name: Build
+      run: xcodebuild build -sdk iphoneos -scheme 'SceneBox-Package'
+    - name: Run tests
+      run: xcodebuild test -destination 'name=iPhone 12' -scheme 'SceneBox-Package' | xcpretty && exit ${PIPESTATUS[0]}
