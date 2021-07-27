@@ -14,13 +14,18 @@ public final class SceneBoxTestSceneViewController: UIViewController, Scene {
     
     public var sceneIdentifier: UUID!
     
+    @SharedStateInjected(\.car)
+    var car: Car?
+    
     var isActiveScene: Bool { sbx.currentIsActiveScene() }
     var sceneDidLoadedBlock: (() -> Void)?
     var sceneWillUnloadedBlock: (() -> Void)?
-    var sceneBoxWillTerminateBlock: (() -> Void)?
+    var sceneBoxWillTerminateBlock: (() -> Void)?        
     
     public func sceneDidLoaded() {
         sceneDidLoadedBlock?()
+        
+        _car.configure(scene: self)
     }
     
     public func sceneWillUnload() {

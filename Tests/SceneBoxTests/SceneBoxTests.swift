@@ -222,6 +222,7 @@ final class SceneBoxTests: XCTestCase {
         wait(for: [expectation], timeout: 10)
     }
     
+    @available(*, deprecated, message: "Use `testSharedStateExtensionWithKeyPathApproach` instead.")
     func testSharedStateExtension() {
         sceneBox.lazyAdd(identifier: sceneIdentifier1, sceneBuilder: self.scene1)
         sceneBox.lazyAdd(identifier: sceneIdentifier2, sceneBuilder: self.scene2)
@@ -241,11 +242,98 @@ final class SceneBoxTests: XCTestCase {
         
         XCTAssertTrue(scene2.sbx.getSharedState(by: key) as? Int == value)
     }
+    
+    func testSharedStateExtensionWithKeyPathApproach() {
+        sceneBox.lazyAdd(identifier: sceneIdentifier1, sceneBuilder: self.scene1)
+        sceneBox.lazyAdd(identifier: sceneIdentifier2, sceneBuilder: self.scene2)
+        
+        XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox))
+        
+        // value type
+        do {
+            let timestamp = Date().timeIntervalSince1970
+            
+            scene1.sbx.putSharedState(by: \.timestamp, sharedState: timestamp)
+            
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \.timestamp) == timestamp)
+            
+            scene1.sbx.transit(to: SceneState.page2.rawValue)
+            
+            XCTAssertTrue(unitTestExtension.getSceneStates()?.last == SceneState.page2.rawValue)
+            
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \.timestamp) == timestamp)
+            
+            let newTimestamp = Date().timeIntervalSince1970
+                    
+            scene2.sbx.putSharedState(by: \.timestamp, sharedState: newTimestamp)
+            
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \.timestamp) == newTimestamp)
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \.timestamp) == newTimestamp)
+            
+            scene1.sbx.putSharedState(by: \.timestamp, sharedState: nil)
+            XCTAssertNil(scene1.sbx.getSharedState(by: \.timestamp))
+            XCTAssertNil(scene2.sbx.getSharedState(by: \.timestamp))
+        }
+        
+        // reference type
+        do {
+            let myCar = Car(name: "benz")
+            
+            scene1.sbx.putSharedState(by: \.car, sharedState: myCar)
+            
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car) === myCar)
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car)?.name == "benz")
+            
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car) === myCar)
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car)?.name == "benz")
+            
+            myCar.name = "bmw"
+            
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car) === myCar)
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car)?.name == "bmw")
+            
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car) === myCar)
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car)?.name == "bmw")
+            
+            scene1.sbx.putSharedState(by: \.car, sharedState: nil)
+            XCTAssertNil(scene1.sbx.getSharedState(by: \.car))
+            XCTAssertNil(scene2.sbx.getSharedState(by: \.car))
+        }
+        
+        // injection property wrapper
+        do {
+            let myCar = Car(name: "mini")
+            
+            XCTAssertNil(scene1.car)
+            XCTAssertNil(scene2.car)
+            
+            scene1.car = myCar
+            
+            XCTAssertTrue(scene1.car === myCar)
+            XCTAssertTrue(scene1.car?.name == "mini")
+            
+            XCTAssertTrue(scene2.car === myCar)
+            XCTAssertTrue(scene2.car?.name == "mini")
+            
+            scene2.car?.name = "benz"
+            
+            XCTAssertTrue(scene1.car === myCar)
+            XCTAssertTrue(scene1.car?.name == "benz")
+            
+            XCTAssertTrue(scene2.car === myCar)
+            XCTAssertTrue(scene2.car?.name == "benz")
+            
+            scene2.car = nil
+            
+            XCTAssertNil(scene1.car)
+            XCTAssertNil(scene2.car)
+        }
+    }
 
     static var allTests = [
         ("testBasicLifeCyclesOfSceneBox", testBasicLifeCyclesOfSceneBox),
         ("testBasicLifeCycleOfScene", testBasicLifeCycleOfScene),
         ("testNavigationExtension", testNavigationExtension),
-        ("testSharedStateExtension", testSharedStateExtension)
+        ("testSharedStateExtensionWithKeyPathApproach", testSharedStateExtensionWithKeyPathApproach)
     ]
 }
