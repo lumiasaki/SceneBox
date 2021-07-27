@@ -131,7 +131,7 @@ class MyViewController: UIViewController, Scene {
 
     var sceneIdentifier: UUID!
   
-    @SharedStateInjected(\.timestamp)
+    @SharedStateInjected(\.color)
     private var color: UIColor?
     
     init() {
