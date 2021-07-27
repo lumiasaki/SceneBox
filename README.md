@@ -11,7 +11,7 @@ Based on these two pain points, I conceived the framework to enable us to develo
 
 To integrate using Apple's SPM, add following as a dependency to your Target.
 
-`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.2.4"))`
+`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.3.0"))`
 
 ## How to use
 
@@ -107,11 +107,11 @@ class MyViewController: UIViewController, Scene {
     var sceneIdentifier: UUID!
   
     func saveValue() {
-        sbx.putSharedState(by: "Color", sharedState: UIColor.red)
+        sbx.putSharedState(by: \.color, sharedState: UIColor.red)
     }
     
     func fetchValue() {
-        let color: UIColor? = sbx.getSharedState(by: "Color")
+        let color: UIColor? = sbx.getSharedState(by: \.color)
     }
     
     func pushToNext() {
@@ -131,7 +131,7 @@ class MyViewController: UIViewController, Scene {
 
     var sceneIdentifier: UUID!
   
-    @SceneBoxSharedStateInjected(key: "Color")
+    @SharedStateInjected(\.timestamp)
     private var color: UIColor?
     
     init() {
@@ -157,7 +157,9 @@ In general, after initializing a `SceneBox`, it can be held manually by the call
 
 ### Scene
 
-The `Scene` represents a page in the `SceneBox`, which is currently limited in the `UIViewController` class, and the limitation may be removed in the future. The fact that `Scene` is a protocol means that using `SceneBox` does not need to change the inheritance of your existing code, making it relatively easy to transform an existing `UIViewController` into a class that can be used in `SceneBox`. `Scene` provides a number of capabilities that can be used in `SceneBox`, such as `getSharedState(by:)`, `putSharedState(state:key:)` and so on.
+The `Scene` represents a page in the `SceneBox`, which is currently limited in the `UIViewController` class, and the limitation may be removed in the future. The fact that `Scene` is a protocol means that using `SceneBox` does not need to change the inheritance of your existing code, making it relatively easy to transform an existing `UIViewController` into a class that can be used in `SceneBox`. `Scene` provides a number of capabilities that can be used in `SceneBox`, such as `getSharedState(by:)`, `putSharedState(state:keyPath:)` and so on.
+
+> For more details about shared state extension with key path, check this: https://github.com/lumiasaki/SceneBox/issues/10
 
 Once a `UIViewController` is marked as conforming to the `Scene` protocol, you can access a number of capabilities under `sbx` namespace of your view controller. Even more, you can extend your own capabilities to the `Scene` under the namespace easily by extend `SceneCapabilityWrapper`, you can follow the guide to extend it.
 
