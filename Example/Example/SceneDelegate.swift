@@ -32,7 +32,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // configure SceneBox with some configurations
         let sceneStateConfiguration = SceneStateConfiguration(sceneStates: ExampleSceneState.allCases)
 
-        let sceneBoxConfiguration = Configuration(stateSceneIdentifierTable: sceneStateConfiguration.currentSceneStateMap).withBuiltInNavigationExtension().withBuiltInSharedStateExtension()
+        let sceneBoxConfiguration = Configuration(stateSceneIdentifierTable: sceneStateConfiguration.currentSceneStateMap).withBuiltInNavigationExtension().withBuiltInSharedStateExtension(stateValue: SceneData())
 
         sceneBoxConfiguration.navigationController = navigationController
 
