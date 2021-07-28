@@ -18,7 +18,7 @@ final class DetailViewModel {
         }
     }
     
-    @SceneBoxSharedStateInjected(key: SceneDataSharingKey.color)
+    @SharedStateInjected(\SceneData.color)
     private var color: Color?
     
     // MARK: - Public

@@ -1,5 +1,5 @@
 //
-//  SceneDataSharingKey.swift
+//  SceneData.swift
 //  Example
 //
 //  Created by Lumia_Saki on 2021/7/12.
@@ -9,7 +9,7 @@
 import Foundation
 
 /// Constants used in this submission with SceneBox.SharedStateExtension.
-struct SceneDataSharingKey {
+class SceneData {
         
-    static let color: String = "Color"
+    var color: Color?
 }

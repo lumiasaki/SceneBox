@@ -11,10 +11,18 @@ import SceneBox
 
 final class HomeViewModel {        
     
-    weak var scene: Scene?
+    weak var scene: Scene? {
+        willSet {
+            _color.configure(scene: newValue)
+        }
+    }
+    
+    @SharedStateInjected(\SceneData.color)
+    private var color: Color?
     
     func choose(color: Color) {
-        scene?.sbx.putSharedState(by: SceneDataSharingKey.color, sharedState: color)
+        self.color = color
+        
         scene?.sbx.transit(to: ExampleSceneState.detail.rawValue)
     }
 }
