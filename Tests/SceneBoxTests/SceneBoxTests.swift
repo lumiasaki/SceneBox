@@ -45,7 +45,7 @@ final class SceneBoxTests: XCTestCase {
         
         configuration = Configuration(stateSceneIdentifierTable: sceneIdentifierTable)
             .withBuiltInNavigationExtension()
-            .withBuiltInSharedStateExtension()
+            .withBuiltInSharedStateExtension(stateValue: MyState())
         
         try! configuration.setExtension(unitTestExtension)
         
@@ -251,53 +251,55 @@ final class SceneBoxTests: XCTestCase {
         
         // value type
         do {
+            XCTAssertNil(scene1.sbx.getSharedState(by: \MyState.timestamp))
+            
             let timestamp = Date().timeIntervalSince1970
             
-            scene1.sbx.putSharedState(by: \.timestamp, sharedState: timestamp)
+            scene1.sbx.putSharedState(by: \MyState.timestamp, sharedState: timestamp)
             
-            XCTAssertTrue(scene1.sbx.getSharedState(by: \.timestamp) == timestamp)
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \MyState.timestamp) == timestamp)
             
             scene1.sbx.transit(to: SceneState.page2.rawValue)
             
             XCTAssertTrue(unitTestExtension.getSceneStates()?.last == SceneState.page2.rawValue)
             
-            XCTAssertTrue(scene2.sbx.getSharedState(by: \.timestamp) == timestamp)
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \MyState.timestamp) == timestamp)
             
             let newTimestamp = Date().timeIntervalSince1970
                     
-            scene2.sbx.putSharedState(by: \.timestamp, sharedState: newTimestamp)
+            scene2.sbx.putSharedState(by: \MyState.timestamp, sharedState: newTimestamp)
             
-            XCTAssertTrue(scene2.sbx.getSharedState(by: \.timestamp) == newTimestamp)
-            XCTAssertTrue(scene1.sbx.getSharedState(by: \.timestamp) == newTimestamp)
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \MyState.timestamp) == newTimestamp)
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \MyState.timestamp) == newTimestamp)
             
-            scene1.sbx.putSharedState(by: \.timestamp, sharedState: nil)
-            XCTAssertNil(scene1.sbx.getSharedState(by: \.timestamp))
-            XCTAssertNil(scene2.sbx.getSharedState(by: \.timestamp))
+            scene1.sbx.putSharedState(by: \MyState.timestamp, sharedState: nil)
+            XCTAssertNil(scene1.sbx.getSharedState(by: \MyState.timestamp))
+            XCTAssertNil(scene2.sbx.getSharedState(by: \MyState.timestamp))
         }
         
         // reference type
         do {
             let myCar = Car(name: "benz")
             
-            scene1.sbx.putSharedState(by: \.car, sharedState: myCar)
+            scene1.sbx.putSharedState(by: \MyState.car, sharedState: myCar)
             
-            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car) === myCar)
-            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car)?.name == "benz")
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \MyState.car) === myCar)
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \MyState.car)?.name == "benz")
             
-            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car) === myCar)
-            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car)?.name == "benz")
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \MyState.car) === myCar)
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \MyState.car)?.name == "benz")
             
             myCar.name = "bmw"
             
-            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car) === myCar)
-            XCTAssertTrue(scene1.sbx.getSharedState(by: \.car)?.name == "bmw")
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \MyState.car) === myCar)
+            XCTAssertTrue(scene1.sbx.getSharedState(by: \MyState.car)?.name == "bmw")
             
-            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car) === myCar)
-            XCTAssertTrue(scene2.sbx.getSharedState(by: \.car)?.name == "bmw")
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \MyState.car) === myCar)
+            XCTAssertTrue(scene2.sbx.getSharedState(by: \MyState.car)?.name == "bmw")
             
-            scene1.sbx.putSharedState(by: \.car, sharedState: nil)
-            XCTAssertNil(scene1.sbx.getSharedState(by: \.car))
-            XCTAssertNil(scene2.sbx.getSharedState(by: \.car))
+            scene1.sbx.putSharedState(by: \MyState.car, sharedState: nil)
+            XCTAssertNil(scene1.sbx.getSharedState(by: \MyState.car))
+            XCTAssertNil(scene2.sbx.getSharedState(by: \MyState.car))
         }
         
         // injection property wrapper
@@ -327,6 +329,48 @@ final class SceneBoxTests: XCTestCase {
             
             XCTAssertNil(scene1.car)
             XCTAssertNil(scene2.car)
+        }
+        
+        // isolation between boxes
+        do {
+            let navigationController = UINavigationController()
+            
+            let sceneIdentifier3 = UUID()
+            let sceneIdentifier4 = UUID()
+            
+            let sceneIdentifierTable = [
+                SceneState.page1.rawValue : sceneIdentifier3,
+                SceneState.page2.rawValue : sceneIdentifier4
+            ]
+            
+            let configuration = Configuration(stateSceneIdentifierTable: sceneIdentifierTable)
+                .withBuiltInNavigationExtension()
+                .withBuiltInSharedStateExtension(stateValue: MyState())
+            
+            configuration.navigationController = navigationController
+            
+            let sceneBox2 = SceneBox(configuration: configuration, entry: { [weak navigationController] scene, sceneBox in
+                navigationController?.pushViewController(scene, animated: true)
+            }, exit: { sceneBox in
+                // keep empty here
+            })
+            
+            let scene3 = SceneBoxTestSceneViewController()
+            let scene4 = SceneBoxTestSceneViewController()
+            
+            sceneBox2.lazyAdd(identifier: sceneIdentifier3, sceneBuilder: scene3)
+            sceneBox2.lazyAdd(identifier: sceneIdentifier4, sceneBuilder: scene4)
+            
+            XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox2))
+            
+            scene1.sbx.putSharedState(by: \MyState.timestamp, sharedState: Date().timeIntervalSince1970)
+            scene2.sbx.putSharedState(by: \MyState.car, sharedState: Car(name: "benz"))
+            
+            XCTAssertNotNil(scene1.sbx.getSharedState(by: \MyState.timestamp))
+            XCTAssertNotNil(scene2.sbx.getSharedState(by: \MyState.car))
+            
+            XCTAssertNil(scene3.sbx.getSharedState(by: \MyState.timestamp))
+            XCTAssertNil(scene4.sbx.getSharedState(by: \MyState.car))
         }
     }
 

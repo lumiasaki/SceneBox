@@ -51,9 +51,10 @@ public extension Configuration {
     }
     
     /// A convenience function to enable SceneBox built-in shared state extension.
+    /// If `stateValue` is nil, you can not use key path variant APIs.
     /// - Returns: `Self` to make the chained calls possible.
-    func withBuiltInSharedStateExtension() -> Self {
-        try? setExtension(SharedStateExtension())
+    func withBuiltInSharedStateExtension(stateValue: AnyObject? = nil) -> Self {
+        try? setExtension(SharedStateExtension(stateValue: stateValue))
         return self
     }
 }
