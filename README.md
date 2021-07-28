@@ -11,7 +11,7 @@ Based on these two pain points, I conceived the framework to enable us to develo
 
 To integrate using Apple's SPM, add following as a dependency to your Target.
 
-`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.3.0"))`
+`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.3.1"))`
 
 ## How to use
 
@@ -111,7 +111,7 @@ class MyViewController: UIViewController, Scene {
     }
     
     func fetchValue() {
-        let color: UIColor? = sbx.getSharedState(by: \.color)
+        let color: UIColor? = sbx.getSharedState(by: \MyState.color)
     }
     
     func pushToNext() {
@@ -131,7 +131,7 @@ class MyViewController: UIViewController, Scene {
 
     var sceneIdentifier: UUID!
   
-    @SharedStateInjected(\.color)
+    @SharedStateInjected(\MyState.color)
     private var color: UIColor?
     
     init() {
@@ -159,7 +159,7 @@ In general, after initializing a `SceneBox`, it can be held manually by the call
 
 The `Scene` represents a page in the `SceneBox`, which is currently limited in the `UIViewController` class, and the limitation may be removed in the future. The fact that `Scene` is a protocol means that using `SceneBox` does not need to change the inheritance of your existing code, making it relatively easy to transform an existing `UIViewController` into a class that can be used in `SceneBox`. `Scene` provides a number of capabilities that can be used in `SceneBox`, such as `getSharedState(by:)`, `putSharedState(state:keyPath:)` and so on.
 
-> For more details about shared state extension with key path, check this: https://github.com/lumiasaki/SceneBox/issues/10
+> For more details about shared state extension with key path, check this: https://github.com/lumiasaki/SceneBox/pull/11
 
 Once a `UIViewController` is marked as conforming to the `Scene` protocol, you can access a number of capabilities under `sbx` namespace of your view controller. Even more, you can extend your own capabilities to the `Scene` under the namespace easily by extend `SceneCapabilityWrapper`, you can follow the guide to extend it.
 

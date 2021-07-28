@@ -14,7 +14,7 @@ public final class SceneBoxTestSceneViewController: UIViewController, Scene {
     
     public var sceneIdentifier: UUID!
     
-    @SharedStateInjected(\.car)
+    @SharedStateInjected(\MyState.car)
     var car: Car?
     
     var isActiveScene: Bool { sbx.currentIsActiveScene() }
