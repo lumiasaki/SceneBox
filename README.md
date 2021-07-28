@@ -107,7 +107,7 @@ class MyViewController: UIViewController, Scene {
     var sceneIdentifier: UUID!
   
     func saveValue() {
-        sbx.putSharedState(by: \.color, sharedState: UIColor.red)
+        sbx.putSharedState(by: \MyState.color, sharedState: UIColor.red)
     }
     
     func fetchValue() {
