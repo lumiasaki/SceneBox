@@ -11,11 +11,15 @@ import Foundation
 /// Life cycle of the a scene box.
 public protocol SceneBoxLifeCycle {
     
+    /// Called at last step in `SceneBox.execute`.
+    func sceneBoxReady()
+    
     /// Called when transit to the `terminate` state, the scene box will be terminated.
     func sceneBoxWillTerminate()
 }
 
 public extension SceneBoxLifeCycle {
     
+    func sceneBoxReady() { }
     func sceneBoxWillTerminate() { }
 }

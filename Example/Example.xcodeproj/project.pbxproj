@@ -13,7 +13,7 @@
 		CE7094CD269C2AEA00298AD2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE7094CB269C2AEA00298AD2 /* LaunchScreen.storyboard */; };
 		CE7094D6269C2B8F00298AD2 /* ExampleSceneState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7094D5269C2B8F00298AD2 /* ExampleSceneState.swift */; };
 		CE7094D9269C2BF900298AD2 /* SceneBox in Frameworks */ = {isa = PBXBuildFile; productRef = CE7094D8269C2BF900298AD2 /* SceneBox */; };
-		CE7094DB269C390A00298AD2 /* SceneStateConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7094DA269C390A00298AD2 /* SceneStateConfiguration.swift */; };
+		CE7094DB269C390A00298AD2 /* MyConfigureFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7094DA269C390A00298AD2 /* MyConfigureFile.swift */; };
 		CE7094DD269C393C00298AD2 /* SceneDataSharingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7094DC269C393C00298AD2 /* SceneDataSharingKey.swift */; };
 		CE7094E2269C3FDB00298AD2 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7094E1269C3FDB00298AD2 /* HomeViewController.swift */; };
 		CE7094E4269C3FE400298AD2 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7094E3269C3FE400298AD2 /* DetailViewController.swift */; };
@@ -30,7 +30,7 @@
 		CE7094CC269C2AEA00298AD2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CE7094CE269C2AEA00298AD2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE7094D5269C2B8F00298AD2 /* ExampleSceneState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSceneState.swift; sourceTree = "<group>"; };
-		CE7094DA269C390A00298AD2 /* SceneStateConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneStateConfiguration.swift; sourceTree = "<group>"; };
+		CE7094DA269C390A00298AD2 /* MyConfigureFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyConfigureFile.swift; sourceTree = "<group>"; };
 		CE7094DC269C393C00298AD2 /* SceneDataSharingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDataSharingKey.swift; sourceTree = "<group>"; };
 		CE7094E1269C3FDB00298AD2 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		CE7094E3269C3FE400298AD2 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
@@ -86,7 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				CE7094D5269C2B8F00298AD2 /* ExampleSceneState.swift */,
-				CE7094DA269C390A00298AD2 /* SceneStateConfiguration.swift */,
+				CE7094DA269C390A00298AD2 /* MyConfigureFile.swift */,
 				CE7094DC269C393C00298AD2 /* SceneDataSharingKey.swift */,
 			);
 			path = SceneConfiguration;
@@ -196,7 +196,7 @@
 			files = (
 				CE7094D6269C2B8F00298AD2 /* ExampleSceneState.swift in Sources */,
 				CE7094DD269C393C00298AD2 /* SceneDataSharingKey.swift in Sources */,
-				CE7094DB269C390A00298AD2 /* SceneStateConfiguration.swift in Sources */,
+				CE7094DB269C390A00298AD2 /* MyConfigureFile.swift in Sources */,
 				CE7094EA269C4D9700298AD2 /* Color.swift in Sources */,
 				CE7094E6269C406C00298AD2 /* HomeViewModel.swift in Sources */,
 				CE7094E8269C407400298AD2 /* DetailViewModel.swift in Sources */,

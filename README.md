@@ -11,7 +11,7 @@ Based on these two pain points, I conceived the framework to enable us to develo
 
 To integrate using Apple's SPM, add following as a dependency to your Target.
 
-`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.4.0"))`
+`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.4.1"))`
 
 ## How to use
 
