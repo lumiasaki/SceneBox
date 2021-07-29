@@ -57,26 +57,34 @@ public final class SceneBox {
     
     /// Lazily add a scene with a construction block and the identifier.
     /// - Parameters:
-    ///   - identifier: Unique identifier of the scene. Notice: the identifier plays different roles than the state of scene. The state should be relative with your business logic.
+    ///   - sceneState: The state of scene you distribute in `Configuration`.
     ///   - sceneBuilder: You should return an instance of `Scene` in the closure.
-    public func lazyAdd(identifier: UUID, sceneBuilder: @escaping SceneConstructionBlock) {
+    public func lazyAdd(sceneState: Int, sceneBuilder: @escaping SceneConstructionBlock) {
         precondition(Thread.isMainThread)
+        
+        guard let identifier = configuration.stateSceneIdentifierTable[sceneState] else {
+            fatalError("could not find associated identifier, you need to distribute scene state firstly.")
+        }
         
         lazySceneConstructors[identifier] = sceneBuilder
     }
     
     /// Lazily add a scene with a construction block and the identifier, the only difference with above is `@autoclosure` this version.
     /// - Parameters:
-    ///   - identifier: Unique identifier of the scene.
-    ///   - sceneBuilder: `Autoclosure` version of construction block.
-    public func lazyAdd(identifier: UUID, sceneBuilder: @autoclosure @escaping SceneConstructionBlock) {
+    ///   - sceneState: The state of scene you distribute in `Configuration`.
+    ///   - sceneBuilder: `Auto-closure` version of construction block.
+    public func lazyAdd(sceneState: Int, sceneBuilder: @autoclosure @escaping SceneConstructionBlock) {
         precondition(Thread.isMainThread)
+        
+        guard let identifier = configuration.stateSceneIdentifierTable[sceneState] else {
+            fatalError("could not find associated identifier, you need to distribute scene state firstly.")
+        }
         
         lazySceneConstructors[identifier] = sceneBuilder
     }
     
     /// Launch the process of `SceneBox`, the `EntryBlock` will be invoked, give you a chance to customize anything, setup the context for entry scene, inject any reserved shared state into the shared store, etc. Once you `execute` the `SceneBox`, the process acts as a box from outside aspect, all navigations and state sharing within the box.
-    /// You can call this function manually, but if you do that you need to manage the life-cycle of `SceneBox` manually as well, we recommend you to use `Executor` to `execute` a instance of `SceneBox`.
+    /// You can call this function manually, but if you do that you need to manage the life-cycle of `SceneBox` manually as well, we recommend you to use `Executor` to `execute` an instance of `SceneBox`.
     /// - Throws: `SBXError.Scene.cantFindEntryScene` if box can not find the entry scene from your `scenesIdentifierMap`.
     /// - Throws: `SBXError.Scene.navigationControllerNil` if navigation controller is nil when executing.
     public func execute() throws {
@@ -86,19 +94,20 @@ public final class SceneBox {
             throw SBXError.Scene.cantFindEntryScene
         }
         
-        guard let _ = navigationController else {
-            throw SBXError.Scene.navigationControllerNil
-        }
-        
         markSceneAsActive(scene: entryTuple.identifier)
         
         entryBlock(entryTuple.scene, self)
+        
+        guard let navigationController = entryTuple.scene.navigationController else {
+            throw SBXError.Scene.navigationControllerNil
+        }
+        
+        self.navigationController = navigationController
     }
     
     // MARK: - Private Methods
     
     private func processConfiguration() {
-        navigationController = configuration.navigationController
         stateSceneIdentifierTable = configuration.stateSceneIdentifierTable
         
         setUpExtensions()
@@ -274,4 +283,31 @@ extension SceneBox: InternalMessageSupport {
         eventBus.watch(on: event, messageType: messageType, next: next)
     }
     
+}
+
+// MARK: - Deprecated
+
+extension SceneBox {
+    
+    /// Lazily add a scene with a construction block and the identifier.
+    /// - Parameters:
+    ///   - identifier: Unique identifier of the scene. Notice: the identifier plays different roles than the state of scene. The state should be relative with your business logic.
+    ///   - sceneBuilder: You should return an instance of `Scene` in the closure.
+    @available(*, deprecated, message: "Use `lazyAdd(sceneState: Int, sceneBuilder: @escaping SceneConstructionBlock)` instead")
+    public func lazyAdd(identifier: UUID, sceneBuilder: @escaping SceneConstructionBlock) {
+        precondition(Thread.isMainThread)
+        
+        lazySceneConstructors[identifier] = sceneBuilder
+    }
+    
+    /// Lazily add a scene with a construction block and the identifier, the only difference with above is `@autoclosure` this version.
+    /// - Parameters:
+    ///   - identifier: Unique identifier of the scene.
+    ///   - sceneBuilder: `Auto-closure` version of construction block.
+    @available(*, deprecated, message: "Use `lazyAdd(sceneState: Int, sceneBuilder: @autoclosure @escaping SceneConstructionBlock)` instead")
+    public func lazyAdd(identifier: UUID, sceneBuilder: @autoclosure @escaping SceneConstructionBlock) {
+        precondition(Thread.isMainThread)
+        
+        lazySceneConstructors[identifier] = sceneBuilder
+    }
 }
