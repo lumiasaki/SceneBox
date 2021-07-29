@@ -75,12 +75,14 @@ public final class NavigationExtension: NSObject, Extension {
         // insert entry into state trace
         stateTrace.append(Self.entry)
         
-        previousNavigationControllerDelegate = sceneBox?.navigationController?.delegate
-        sceneBox?.navigationController?.delegate = self
-        
         sceneBox?.watch(on: EventBus.EventName.getStatesRequest, messageType: Void.self, next: { [unowned self] _ in
             self.sceneBox?.dispatch(event: EventBus.EventName.getStatesResponse, message: NavigationGetScenesMessage(scenes: stateTrace))
         })
+    }
+    
+    public func sceneBoxReady() {
+        previousNavigationControllerDelegate = sceneBox?.navigationController?.delegate
+        sceneBox?.navigationController?.delegate = self
     }
     
     // MARK: - Private

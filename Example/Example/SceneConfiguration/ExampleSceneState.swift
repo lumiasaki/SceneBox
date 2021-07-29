@@ -16,11 +16,4 @@ struct ExampleSceneState: RawRepresentable, Hashable, Equatable {
 
     static let home = ExampleSceneState(rawValue: NavigationExtension.entry)
     static let detail = ExampleSceneState(rawValue: 1)
-    static let termination = ExampleSceneState(rawValue: NavigationExtension.termination)
-}
-
-extension ExampleSceneState: CaseIterable {
-
-    /// Help to register all states.
-    static var allCases: [ExampleSceneState] { [.home, .detail, .termination] }
 }

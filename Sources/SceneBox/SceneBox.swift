@@ -103,6 +103,10 @@ public final class SceneBox {
         }
         
         self.navigationController = navigationController
+        
+        // notify ready event
+        scenesIdentifierMap.values.forEach { $0.sceneBoxReady() }
+        extensions.values.forEach { $0.sceneBoxReady() }
     }
     
     // MARK: - Private Methods

@@ -30,17 +30,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         // configure SceneBox with some configurations
-        let sceneStateConfiguration = SceneStateConfiguration(sceneStates: ExampleSceneState.allCases)
-
-        let sceneBoxConfiguration = Configuration(stateSceneIdentifierTable: sceneStateConfiguration.currentSceneStateMap).withBuiltInNavigationExtension().withBuiltInSharedStateExtension(stateValue: SceneData())
-
-        sceneBoxConfiguration.navigationController = navigationController
+        let sceneBoxConfiguration = try! Configuration(configurationFile: MyConfigureFile.self)
 
         let sceneBox = SceneBox(configuration: sceneBoxConfiguration) { scene, sceneBox in
             self.navigationController.pushViewController(scene, animated: false)
         } exit: { _ in }
 
-        setUpSceneStateIdentifierTable(for: sceneBox, sceneStateConfiguration: sceneStateConfiguration)
+        setUpSceneStateIdentifierTable(for: sceneBox)
 
         try? Executor.shared.execute(box: sceneBox)
     }
@@ -79,10 +75,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 extension SceneDelegate {
     
     // The real set up place for view controllers and view models, it's a great tool for decoupling
-    private func setUpSceneStateIdentifierTable(for box: SceneBox, sceneStateConfiguration: SceneStateConfiguration) {
+    private func setUpSceneStateIdentifierTable(for box: SceneBox) {
         // home
         do {
-            box.lazyAdd(identifier: sceneStateConfiguration.identifier(with: .home)) {
+            box.lazyAdd(sceneState: ExampleSceneState.home.rawValue) {
                 let viewModel = HomeViewModel()
                 let viewController = HomeViewController(viewModel: viewModel)
                 viewModel.scene = viewController
@@ -93,7 +89,7 @@ extension SceneDelegate {
 
         // detail
         do {
-            box.lazyAdd(identifier: sceneStateConfiguration.identifier(with: .detail)) {
+            box.lazyAdd(sceneState: ExampleSceneState.detail.rawValue) {
                 let viewModel = DetailViewModel()
                 let viewController = DetailViewController(viewModel: viewModel)
                 viewModel.scene = viewController

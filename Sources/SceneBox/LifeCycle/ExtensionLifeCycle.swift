@@ -17,5 +17,5 @@ public protocol ExtensionLifeCycle {
 
 public extension ExtensionLifeCycle {
     
-    func extensionDidMount() { }
+    func extensionDidMount() { }    
 }
