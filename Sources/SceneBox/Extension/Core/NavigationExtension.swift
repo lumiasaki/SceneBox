@@ -132,6 +132,15 @@ extension SceneCapabilityWrapper {
         ext.transit(to: state)
     }
     
+    /// Transit to termination state of scene, the scene box will be terminated soon after calling this.
+    public func terminate() {
+        guard let ext = try? _getExtension(by: NavigationExtension.self) else {
+            return
+        }
+        
+        ext.transit(to: NavigationExtension.termination)
+    }
+    
     /// Return true if the current scene is the active one. `Active` means the caller scene is on the scene as the latest scene in the stack.
     /// - Returns: The result of testing.
     public func currentIsActiveScene() -> Bool {

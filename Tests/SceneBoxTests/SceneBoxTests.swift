@@ -17,39 +17,22 @@ final class SceneBoxTests: XCTestCase {
     var sceneBox: SceneBox!
     
     var scene1: SceneBoxTestSceneViewController!
-    var sceneIdentifier1: UUID!
-    var scene2: SceneBoxTestSceneViewController!
-    var sceneIdentifier2: UUID!
-    
-    struct SceneState: RawRepresentable, Hashable, Equatable {
-                
-        var rawValue: Int
-        
-        static let page1 = SceneState(rawValue: NavigationExtension.entry)
-        static let page2 = SceneState(rawValue: 1)
-        static let termination = SceneState(rawValue: NavigationExtension.termination)
-    }
+    var scene2: SceneBoxTestSceneViewController!        
     
     override func setUp() {
         navigationController = UINavigationController()
-        
         unitTestExtension = UnitTestExtension()
         
-        sceneIdentifier1 = UUID()
-        sceneIdentifier2 = UUID()
+        let sceneStates = Set([
+            SceneState.page1.rawValue,
+            SceneState.page2.rawValue
+        ])
         
-        let sceneIdentifierTable = [
-            SceneState.page1.rawValue : sceneIdentifier1!,
-            SceneState.page2.rawValue : sceneIdentifier2!
-        ]
-        
-        configuration = Configuration(stateSceneIdentifierTable: sceneIdentifierTable)
+        configuration = Configuration(sceneStates: sceneStates)
             .withBuiltInNavigationExtension()
             .withBuiltInSharedStateExtension(stateValue: MyState())
         
         try! configuration.setExtension(unitTestExtension)
-        
-        configuration.navigationController = navigationController
         
         sceneBox = SceneBox(configuration: configuration, entry: { [weak navigationController] scene, sceneBox in
             navigationController?.pushViewController(scene, animated: true)
@@ -86,13 +69,13 @@ final class SceneBoxTests: XCTestCase {
             expectation.fulfill()
         }
         
-        sceneBox.lazyAdd(identifier: sceneIdentifier1, sceneBuilder: self.scene1)
-        sceneBox.lazyAdd(identifier: sceneIdentifier2, sceneBuilder: self.scene2)
+        sceneBox.lazyAdd(sceneState: SceneState.page1.rawValue, sceneBuilder: self.scene1)
+        sceneBox.lazyAdd(sceneState: SceneState.page2.rawValue, sceneBuilder: self.scene2)
         
         XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox))
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.scene1.sbx.transit(to: SceneState.termination.rawValue)
+            self.scene1.sbx.terminate()
         }
         
         wait(for: [expectation], timeout: 10)
@@ -126,8 +109,8 @@ final class SceneBoxTests: XCTestCase {
             expectation.fulfill()
         }
         
-        sceneBox.lazyAdd(identifier: sceneIdentifier1, sceneBuilder: self.scene1)
-        sceneBox.lazyAdd(identifier: sceneIdentifier2, sceneBuilder: self.scene2)
+        sceneBox.lazyAdd(sceneState: SceneState.page1.rawValue, sceneBuilder: self.scene1)
+        sceneBox.lazyAdd(sceneState: SceneState.page2.rawValue, sceneBuilder: self.scene2)
         
         XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox))
         
@@ -148,7 +131,7 @@ final class SceneBoxTests: XCTestCase {
             
             self.unitTestExtension.navigationTrackBlock = {
                 XCTAssert($0 == SceneState.page2.rawValue)
-                XCTAssert($1 == SceneState.termination.rawValue)
+                XCTAssert($1 == NavigationExtension.termination)
                 
                 XCTAssertTrue(scene1Load <= scene1Unload)
                 XCTAssertTrue(scene1Unload <= scene2Load)
@@ -157,15 +140,15 @@ final class SceneBoxTests: XCTestCase {
                 expectation.fulfill()
             }
             
-            self.scene1.sbx.transit(to: SceneState.termination.rawValue)
+            self.scene1.sbx.terminate()
         }
         
         wait(for: [expectation], timeout: 10)
     }
     
     func testNavigationExtension() {
-        sceneBox.lazyAdd(identifier: sceneIdentifier1, sceneBuilder: self.scene1)
-        sceneBox.lazyAdd(identifier: sceneIdentifier2, sceneBuilder: self.scene2)
+        sceneBox.lazyAdd(sceneState: SceneState.page1.rawValue, sceneBuilder: self.scene1)
+        sceneBox.lazyAdd(sceneState: SceneState.page2.rawValue, sceneBuilder: self.scene2)
         
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 5
@@ -224,8 +207,8 @@ final class SceneBoxTests: XCTestCase {
     
     @available(*, deprecated, message: "Use `testSharedStateExtensionWithKeyPathApproach` instead.")
     func testSharedStateExtension() {
-        sceneBox.lazyAdd(identifier: sceneIdentifier1, sceneBuilder: self.scene1)
-        sceneBox.lazyAdd(identifier: sceneIdentifier2, sceneBuilder: self.scene2)
+        sceneBox.lazyAdd(sceneState: SceneState.page1.rawValue, sceneBuilder: self.scene1)
+        sceneBox.lazyAdd(sceneState: SceneState.page2.rawValue, sceneBuilder: self.scene2)
         
         XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox))
         
@@ -244,8 +227,8 @@ final class SceneBoxTests: XCTestCase {
     }
     
     func testSharedStateExtensionWithKeyPathApproach() {
-        sceneBox.lazyAdd(identifier: sceneIdentifier1, sceneBuilder: self.scene1)
-        sceneBox.lazyAdd(identifier: sceneIdentifier2, sceneBuilder: self.scene2)
+        sceneBox.lazyAdd(sceneState: SceneState.page1.rawValue, sceneBuilder: self.scene1)
+        sceneBox.lazyAdd(sceneState: SceneState.page2.rawValue, sceneBuilder: self.scene2)
         
         XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox))
         
@@ -335,19 +318,14 @@ final class SceneBoxTests: XCTestCase {
         do {
             let navigationController = UINavigationController()
             
-            let sceneIdentifier3 = UUID()
-            let sceneIdentifier4 = UUID()
+            let sceneStates = Set([
+                SceneState.page1.rawValue,
+                SceneState.page2.rawValue
+            ])
             
-            let sceneIdentifierTable = [
-                SceneState.page1.rawValue : sceneIdentifier3,
-                SceneState.page2.rawValue : sceneIdentifier4
-            ]
-            
-            let configuration = Configuration(stateSceneIdentifierTable: sceneIdentifierTable)
+            let configuration = Configuration(sceneStates: sceneStates)
                 .withBuiltInNavigationExtension()
                 .withBuiltInSharedStateExtension(stateValue: MyState())
-            
-            configuration.navigationController = navigationController
             
             let sceneBox2 = SceneBox(configuration: configuration, entry: { [weak navigationController] scene, sceneBox in
                 navigationController?.pushViewController(scene, animated: true)
@@ -358,8 +336,8 @@ final class SceneBoxTests: XCTestCase {
             let scene3 = SceneBoxTestSceneViewController()
             let scene4 = SceneBoxTestSceneViewController()
             
-            sceneBox2.lazyAdd(identifier: sceneIdentifier3, sceneBuilder: scene3)
-            sceneBox2.lazyAdd(identifier: sceneIdentifier4, sceneBuilder: scene4)
+            sceneBox2.lazyAdd(sceneState: SceneState.page1.rawValue, sceneBuilder: scene3)
+            sceneBox2.lazyAdd(sceneState: SceneState.page2.rawValue, sceneBuilder: scene4)
             
             XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox2))
             
@@ -373,11 +351,36 @@ final class SceneBoxTests: XCTestCase {
             XCTAssertNil(scene4.sbx.getSharedState(by: \MyState.car))
         }
     }
+    
+    func testConfigurationFile() {
+        let navigationController = UINavigationController()
+        
+        let configuration: Configuration! = try? Configuration(configurationFile: MyConfigurationFile.self)
+        
+        XCTAssertNotNil(configuration)
+        XCTAssertTrue(configuration.extensions.count == MyConfigurationFile.extensions.count)
+        XCTAssertTrue(configuration.stateSceneIdentifierTable.count == MyConfigurationFile.sceneStates.count)
+        
+        let sceneBox2 = SceneBox(configuration: configuration, entry: { [weak navigationController] scene, sceneBox in
+            navigationController?.pushViewController(scene, animated: true)
+        }, exit: { sceneBox in
+            // keep empty here
+        })
+        
+        let scene3 = SceneBoxTestSceneViewController()
+        let scene4 = SceneBoxTestSceneViewController()
+        
+        sceneBox2.lazyAdd(sceneState: SceneState.page1.rawValue, sceneBuilder: scene3)
+        sceneBox2.lazyAdd(sceneState: SceneState.page2.rawValue, sceneBuilder: scene4)
+        
+        XCTAssertNoThrow(try Executor.shared.execute(box: sceneBox2))
+    }
 
     static var allTests = [
         ("testBasicLifeCyclesOfSceneBox", testBasicLifeCyclesOfSceneBox),
         ("testBasicLifeCycleOfScene", testBasicLifeCycleOfScene),
         ("testNavigationExtension", testNavigationExtension),
-        ("testSharedStateExtensionWithKeyPathApproach", testSharedStateExtensionWithKeyPathApproach)
+        ("testSharedStateExtensionWithKeyPathApproach", testSharedStateExtensionWithKeyPathApproach),
+        ("testConfigurationFile", testConfigurationFile)
     ]
 }

@@ -11,7 +11,7 @@ Based on these two pain points, I conceived the framework to enable us to develo
 
 To integrate using Apple's SPM, add following as a dependency to your Target.
 
-`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.3.1"))`
+`.package(url: "https://github.com/lumiasaki/SceneBox.git", .upToNextMajor(from: "0.4.0"))`
 
 ## How to use
 
@@ -24,14 +24,13 @@ struct SceneState: RawRepresentable, Hashable, Equatable {
     var rawValue: Int
 
     static let home = SceneState(rawValue: NavigationExtension.entry)
-    static let detail = SceneState(rawValue: 1)
-    static let termination = SceneState(rawValue: NavigationExtension.termination)
+    static let detail = SceneState(rawValue: 1)    
 }
 
 extension SceneState: CaseIterable {
 
     /// Help to register all states.
-    static var allCases: [SceneState] { [.home, .detail, .termination] }
+    static var allCases: [SceneState] { [.home, .detail] }
 }
 
 ```
@@ -40,14 +39,15 @@ extension SceneState: CaseIterable {
 
 ```swift
 
-let identifier = UUID()
-let sceneState = SceneState.home.rawValue
+let sceneStates = Set([
+    SceneState.home.rawValue
+])
 
-let sceneBoxConfiguration = Configuration(stateSceneIdentifierTable: [sceneState : identifier])
+let sceneBoxConfiguration = Configuration(sceneStates: sceneStates)
 
 ```
 
-I strongly recommend you to use helper `SceneStateConfiguration` in `Example Project` to simplify `Configuration` initialization.
+Or generate it by using `ConfigurationFile` way to put your setting steps into one place.
 
 ### Initiate SceneBox
 
@@ -63,7 +63,7 @@ let sceneBox = SceneBox(configuration: sceneBoxConfiguration) { scene, sceneBox 
 
 ```swift
 
-box.lazyAdd(identifier: sceneStateConfiguration.identifier(with: .home)) {
+box.lazyAdd(sceneState: SceneState.home.rawValue) {
                 let viewModel = HomeViewModel()
                 let viewController = HomeViewController(viewModel: viewModel)
                 viewModel.scene = viewController

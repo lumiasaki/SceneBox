@@ -120,7 +120,9 @@ public final class SharedStateExtension: Extension {
     
     private var stateValue: AnyObject?
     
-    init(stateValue: AnyObject?) {
+    /// Initiate `SharedStateExtension` with a state instance, `stateValue` must be reference type.
+    /// - Parameter stateValue: AnyObject.
+    public init(stateValue: AnyObject?) {
         self.stateValue = stateValue
     }
     
